@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resmi Tatiller 2026 – İzin Planlayıcı</title>
+  <style>
+    :root{
+      --bg: #0b0b10;
+      --card:#12121a;
+      --muted:#8b8fa3;
+      --text:#e8e9f1;
+      --accent:#7c3aed;
+      --holiday:#ff6b6b;
+      --leave:#f1c40f;
+      --weekend:#3a3f55;
+      --grid:#1b1b27;
+      --ok:#10b981;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 80% -10%, #5522ff20, transparent 60%), radial-gradient(1000px 600px at -10% 10%, #00e5ff12, transparent 50%), var(--bg);
+      color:var(--text);
+      line-height:1.4;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* Header kesinlikle sticky/fixed değil */
+    header{
+      position: static !important;
+      top: auto !important;
+      z-index: auto !important;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, #0b0b10d0, #0b0b10b0 60%, transparent);
+      border-bottom:1px solid #ffffff10;
+    }
+
+    .wrap{max-width:1200px; margin:0 auto; padding:24px 20px;}
+    h1{font-size: clamp(24px, 3vw, 36px); margin:6px 0 0; letter-spacing:.3px;}
+    .legend{display:flex; gap:14px; flex-wrap:wrap; align-items:center; color:#c9cbe0; font-size:14px}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#ffffff0a; border:1px solid #ffffff14}
+    .sw{width:14px; height:14px; border-radius:4px; border:1px solid #ffffff20}
+    .sw.holiday{background: color-mix(in srgb, var(--holiday) 28%, transparent);}
+    .sw.weekend{background: color-mix(in srgb, var(--weekend) 52%, transparent);}
+    .sw.leave{background: color-mix(in srgb, var(--leave) 40%, transparent);}
+    .sw.half{background:linear-gradient(135deg, color-mix(in srgb, var(--holiday) 28%, transparent) 50%, transparent 50%);}
+
+    .banner{
+      margin:14px 0 12px;
+      border-radius:18px;
+      padding:18px 20px;
+      border:1px solid #ffffff24;
+      background:
+        radial-gradient(800px 300px at 0% 0%, #7c3aed22, transparent 60%),
+        radial-gradient(600px 200px at 100% 0%, #00e5ff20, transparent 60%),
+        #141421;
+      box-shadow: 0 12px 30px #0008, inset 0 1px #ffffff18;
+    }
+    .banner h2{margin:0 0 6px; font-size: clamp(18px, 2.1vw, 24px)}
+    .banner .nums{display:flex; gap:10px; flex-wrap:wrap}
+    .banner .pill{background:#ffffff10}
+
+    .calendar{display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; margin-top:16px;}
+    @media (max-width: 980px){ .calendar{grid-template-columns: repeat(2, 1fr);} }
+    @media (max-width: 680px){ .calendar{grid-template-columns: 1fr;} }
+
+    .month{
+      background:linear-gradient(180deg, #ffffff06, transparent 40%);
+      border:1px solid #ffffff14;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow: 0 12px 30px #00000050, inset 0 1px #ffffff18;
+    }
+    .month > header{
+      position:relative; top:auto; background: linear-gradient(180deg, #1c1c28, #12121a);
+      padding:14px 16px; display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid #ffffff12;
+    }
+    .month-name{font-weight:700; text-transform:capitalize; letter-spacing:.3px}
+
+    .grid{padding: 10px 12px 16px; display:grid; grid-template-columns: repeat(7, 1fr); gap:6px}
+    .dow{font-size:12px; color:#b2b5c7; text-align:center; padding:6px 0 10px; border-bottom:1px dashed #ffffff14}
+
+    .day{
+      aspect-ratio: 1/1;
+      border-radius:12px;
+      background: #11121a;
+      border:1px solid var(--grid);
+      display:flex; align-items:flex-start; justify-content:flex-start;
+      padding:8px;
+      position:relative;
+      transition: transform .15s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      overflow:hidden;
+      cursor:pointer;
+      outline:none;
+    }
+    .day:hover{transform: translateY(-2px); border-color:#ffffff24; background: #161824; box-shadow: 0 6px 16px #0006;}
+    .day:focus-visible{box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 55%, #fff 10%);}
+    .day .n{font-weight:600; font-size:14px; opacity:.9}
+    .day.empty{background: transparent; border:none}
+
+    .day.weekend{
+      background: color-mix(in srgb, var(--weekend) 26%, #0f1020);
+      outline: 1px dashed color-mix(in srgb, var(--weekend) 60%, transparent);
+    }
+    .day.holiday{
+      background: color-mix(in srgb, var(--holiday) 18%, #10111c);
+      outline: 1px dashed color-mix(in srgb, var(--holiday) 60%, transparent);
+    }
+    .day.leave{background: color-mix(in srgb, var(--leave) 18%, #10111c);}
+    .day.half::after{
+      content:'½'; position:absolute; top:6px; right:8px; font-size:11px; font-weight:800;
+      color: color-mix(in srgb, var(--holiday) 85%, white 15%);
+      background:#ffffff10; padding:2px 6px; border-radius:999px; border:1px solid #ffffff24;
+    }
+    .chip{
+      position:absolute; top:24px; right:8px; font-size:10px; font-weight:800;
+      color:#fff; background:#ffffff10; padding:2px 6px; border-radius:999px; border:1px solid #ffffff24
+    }
+    .chip.leave{border-color: color-mix(in srgb, var(--leave) 65%, #fff 0%);}
+
+    .dot{position:absolute; left:8px; bottom:8px; width:6px; height:6px; border-radius:50%; background:#fff3; box-shadow:0 0 0 2px #fff1}
+    .day.holiday .dot{background:var(--holiday);}
+    .day.leave .dot{background:var(--leave);}
+    .day.weekend .dot{background:var(--weekend);}
+
+    .name{
+      position:absolute; left:6px; right:6px; bottom:6px;
+      font-size:12px; font-weight:600; line-height:1.15; color:#ffffff;
+      text-shadow:0 1px 2px #000a;
+      padding:3px 6px; border-radius:8px;
+      background:#00000033; backdrop-filter: blur(2px);
+      border:1px solid #ffffff22;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+
+    .suggestions{margin-top:24px; display:grid; grid-template-columns: repeat(2, 1fr); gap:16px}
+    @media (max-width: 980px){ .suggestions{grid-template-columns: 1fr;} }
+    .card{
+      background:linear-gradient(180deg, #ffffff08, #ffffff05 40%);
+      border:1px solid #ffffff14;
+      border-radius:16px; padding:16px;
+      box-shadow: 0 10px 24px #0006, inset 0 1px #ffffff10;
+    }
+    .card h3{margin:0 0 8px; font-size:16px}
+    .meta{display:flex; gap:12px; flex-wrap:wrap; color:#c9cce3; font-size:13px}
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#ffffff08; border:1px solid #ffffff16}
+    .badge strong{color:#fff}
+
+    footer{color:#9aa0b7; font-size:12px; margin-top:24px}
+    .source{opacity:.9}
+    .madeby{display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:6px 10px; border-radius:999px; background:#ffffff0a; border:1px solid #ffffff16; color:#cdd0e6; font-size:12px}
+    .madeby strong{color:#fff; letter-spacing:.2px}
+
+    /* Tooltip */
+    .tooltip{
+      position:fixed; z-index:2000; min-width:260px; max-width:min(320px, 92vw);
+      background: linear-gradient(180deg, #1a1b25, #12121a); color:var(--text);
+      border:1px solid #ffffff22; border-radius:14px; box-shadow:0 18px 44px #0009, inset 0 1px #ffffff12;
+      padding:12px; transform-origin: top left; animation: pop .12s ease;
+      overflow-wrap:anywhere; word-break:break-word; box-sizing:border-box;
+    }
+    .tooltip.hidden{ display:none; }
+    .tip-hdr{font-weight:700; margin:2px 0 6px; font-size:14px}
+    .tip-sub{color:#b9bdd2; font-size:12px; margin-bottom:8px}
+    .tip-tags{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0}
+    .tag{font-size:11px; padding:4px 8px; border-radius:999px; background:#ffffff0d; border:1px solid #ffffff1f}
+    .tag.holiday{border-color: color-mix(in srgb, var(--holiday) 45%, #fff 0%); color:#ffd2d2}
+    .tag.weekend{border-color: color-mix(in srgb, var(--weekend) 45%, #fff 0%); color:#cfd5ff}
+    .tag.leave{border-color: color-mix(in srgb, var(--leave) 45%, #fff 0%); color:#fff5bf}
+    .tip-list{margin-top:6px; display:grid; gap:6px}
+    .tip-item{background:#ffffff08; border:1px solid #ffffff18; border-radius:10px; padding:8px}
+    .tip-item b{color:#fff}
+    .tip-close{position:absolute; top:6px; right:8px; font-size:18px; color:#cfd2ea; background:transparent; border:none; cursor:pointer}
+    @keyframes pop{from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <div>
+          <h1>Resmi Tatiller 2026</h1>
+          <div class="legend">
+            <span class="pill"><span class="sw holiday"></span> Resmî tatil</span>
+            <span class="pill"><span class="sw half"></span> Arife (yarım gün)</span>
+            <span class="pill"><span class="sw weekend"></span> Hafta sonu (tatil)</span>
+            <span class="pill"><span class="sw leave"></span> İzin günü</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside class="banner">
+      <h2 id="bigline">2026 yılında <strong>…</strong> gün izinle <strong>…</strong> gün tatil!</h2>
+      <div class="nums">
+        <span class="pill"><strong id="leaveTotal">0</strong> gün izin</span>
+        <span class="pill"><strong id="vacTotal">0</strong> gün tatil</span>
+      </div>
+    </aside>
+
+    <section class="calendar" id="calendar"></section>
+
+    <section class="suggestions" id="suggestions"></section>
+
+    <footer>
+      <p class="source">Not: Arife günleri 13:00 itibarıyla yarım gündür. Tarihler 2026 Türkiye resmî tatil takvimine göre işaretlenmiştir.</p>
+      <p class="madeby">Developed by <strong>eylmz</strong></p>
+    </footer>
+
+    <div id="tooltip" class="tooltip hidden" aria-live="polite"></div>
+  </main>
+
+<script>
+(function(){
+  const YEAR = 2026;
+
+  const HOLIDAYS = [
+    { date: '2026-01-01', name: 'Yılbaşı', halfDay: false },
+    { date: '2026-03-19', name: 'Ramazan Bayramı Arifesi', halfDay: true },
+    { date: '2026-03-20', name: 'Ramazan Bayramı 1. Gün', halfDay: false },
+    { date: '2026-03-21', name: 'Ramazan Bayramı 2. Gün', halfDay: false },
+    { date: '2026-03-22', name: 'Ramazan Bayramı 3. Gün', halfDay: false },
+    { date: '2026-04-23', name: 'Ulusal Egemenlik ve Çocuk Bayramı', halfDay: false },
+    { date: '2026-05-01', name: 'Emek ve Dayanışma Günü', halfDay: false },
+    { date: '2026-05-19', name: 'Atatürk’ü Anma, Gençlik ve Spor Bayramı', halfDay: false },
+    { date: '2026-05-26', name: 'Kurban Bayramı Arifesi', halfDay: true },
+    { date: '2026-05-27', name: 'Kurban Bayramı 1. Gün', halfDay: false },
+    { date: '2026-05-28', name: 'Kurban Bayramı 2. Gün', halfDay: false },
+    { date: '2026-05-29', name: 'Kurban Bayramı 3. Gün', halfDay: false },
+    { date: '2026-05-30', name: 'Kurban Bayramı 4. Gün', halfDay: false },
+    { date: '2026-07-15', name: 'Demokrasi ve Millî Birlik Günü', halfDay: false },
+    { date: '2026-08-30', name: 'Zafer Bayramı', halfDay: false },
+    { date: '2026-10-28', name: 'Cumhuriyet Bayramı Arifesi', halfDay: true },
+    { date: '2026-10-29', name: 'Cumhuriyet Bayramı', halfDay: false },
+  ];
+
+  const USER_LEAVES = [
+    { date: '2026-01-02', duration: 1 },
+    { date: '2026-03-16', duration: 1 },
+    { date: '2026-03-17', duration: 1 },
+    { date: '2026-03-18', duration: 1 },
+    { date: '2026-03-19', duration: 0.5 },
+    { date: '2026-04-24', duration: 1 },
+    { date: '2026-05-18', duration: 1 },
+    { date: '2026-05-25', duration: 1 },
+    { date: '2026-05-26', duration: 0.5 },
+    { date: '2026-10-28', duration: 0.5 },
+    { date: '2026-10-30', duration: 1 },
+  ];
+
+  const toDate = (iso) => new Date(iso + 'T00:00:00');
+  const toISO  = (d) => new Date(d).toISOString().slice(0,10);
+  const fmt = (d, opts={}) => d.toLocaleDateString('tr-TR', { ...{ day:'2-digit', month:'long', weekday:'short' }, ...opts });
+  const yyyy_mm_dd = (y,m,d) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const isWeekendDate = (d) => [6,0].includes(d.getDay());
+
+  const holidayMap = new Map(HOLIDAYS.map(h => [h.date, h]));
+  const leaveMap   = new Map(USER_LEAVES.map(l => [l.date, l.duration]));
+
+  function isFullOff(iso){
+    const d = toDate(iso);
+    const hol = holidayMap.get(iso);
+    const lv  = leaveMap.get(iso) || 0;
+    if (isWeekendDate(d)) return true;
+    if (hol && !hol.halfDay) return true;
+    if (lv === 1) return true;
+    if (hol?.halfDay && lv === 0.5) return true;
+    return false;
+  }
+
+  function* daysOfYear(y){
+    for (let m=0; m<12; m++){
+      const days = new Date(Date.UTC(y, m+1, 0)).getUTCDate();
+      for (let d=1; d<=days; d++){
+        yield new Date(Date.UTC(y, m, d));
+      }
+    }
+  }
+
+  const calRoot = document.getElementById('calendar');
+  const dows = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+
+  for (let month=1; month<=12; month++){
+    const first = new Date(Date.UTC(YEAR, month-1, 1));
+    const lastDay = new Date(Date.UTC(YEAR, month, 0)).getUTCDate();
+    const offset = (first.getUTCDay() + 6) % 7;
+
+    const section = document.createElement('section');
+    section.className = 'month';
+    section.innerHTML = `
+      <header><div class="month-name">${first.toLocaleDateString('tr-TR', { month:'long' })}</div><div>${YEAR}</div></header>
+      <div class="grid"></div>
+    `;
+    const grid = section.querySelector('.grid');
+
+    for (const d of dows){ const el = document.createElement('div'); el.className='dow'; el.textContent=d; grid.appendChild(el); }
+    for (let i=0; i<offset; i++){ const pad=document.createElement('div'); pad.className='day empty'; grid.appendChild(pad); }
+
+    for (let day=1; day<=lastDay; day++){
+      const isoStr = yyyy_mm_dd(YEAR, month, day);
+      const d = new Date(Date.UTC(YEAR, month-1, day));
+      const weekend = isWeekendDate(d);
+      const hol = holidayMap.get(isoStr);
+      const leaveDur = leaveMap.get(isoStr) || 0;
+
+      const el = document.createElement('div');
+      let cls = 'day';
+      if (weekend) cls += ' weekend';
+      if (hol) cls += ' holiday';
+      if (leaveDur>0) cls += ' leave';
+      if (hol?.halfDay) cls += ' half';
+      el.className = cls;
+
+      const nameHtml = hol ? `<div class="name">${hol.name}</div>` : '';
+      const dotHtml = (hol || leaveDur>0 || weekend) ? `<span class="dot"></span>` : '';
+      const chipHalfLeave = leaveDur===0.5 ? `<span class="chip leave">½ izin</span>` : '';
+      el.innerHTML = `<div class="n">${day}</div>${dotHtml}${nameHtml}${chipHalfLeave}`;
+
+      el.dataset.iso = isoStr; el.tabIndex = 0;
+      const ariaBits = [fmt(new Date(isoStr)), hol?`Resmî tatil: ${hol.name}`:null, weekend?'Hafta sonu':null, leaveDur? (leaveDur===0.5?'Yarım gün izin':'İzin günü'): null].filter(Boolean).join(', ');
+      el.setAttribute('aria-label', ariaBits);
+
+      grid.appendChild(el);
+    }
+    calRoot.appendChild(section);
+  }
+
+  const segments = [];
+  let segStart = null, segEnd = null;
+  for (const d of daysOfYear(YEAR)){
+    const key = toISO(d);
+    if (isFullOff(key)){
+      if (!segStart){ segStart = new Date(d); segEnd = new Date(d); }
+      else { segEnd = new Date(d); }
+    } else {
+      if (segStart){ segments.push([segStart, segEnd]); segStart=null; segEnd=null; }
+    }
+  }
+  if (segStart) segments.push([segStart, segEnd]);
+
+  const longBreaks = segments
+    .map(([s,e])=>({start:s, end:e, days: Math.round((e - s)/86400000)+1}))
+    .filter(x => x.days >= 3)
+    .map(x => ({...x, title: inferTitle(x.start, x.end)}));
+
+  function inferTitle(start, end){
+    for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      const h = holidayMap.get(toISO(d));
+      if (h) return h.name;
+    }
+    return 'Uzun Hafta Sonu';
+  }
+
+  function countLeaveInRange(start, end){
+    let sum = 0; const s = new Date(start); const e = new Date(end);
+    for (let d=new Date(s); d<=e; d.setDate(d.getDate()+1)){
+      const v = leaveMap.get(toISO(d)); if (v) sum += v;
+    }
+    return sum;
+  }
+
+  const totalLeave = [...leaveMap.values()].reduce((a,b)=>a+b,0);
+  const totalVacation = longBreaks.reduce((a,b)=>a+b.days,0);
+  document.getElementById('leaveTotal').textContent = totalLeave;
+  document.getElementById('vacTotal').textContent = totalVacation;
+  document.getElementById('bigline').innerHTML = `2026 yılında <strong>${totalLeave}</strong> gün izin kullanarak, <strong>${totalVacation}</strong> gün tatil yapabileceğinizi biliyor musunuz?`;
+
+  const tt = document.getElementById('tooltip');
+  let ttAnchor = null;
+  function hideTip(){ tt.classList.add('hidden'); ttAnchor = null; }
+  function showTip(anchor, dayIso){
+    const d = toDate(dayIso);
+    const h = holidayMap.get(dayIso);
+    const weekend = isWeekendDate(d);
+    const leaveDur = leaveMap.get(dayIso) || 0;
+
+    const related = longBreaks.filter(b => dayIso >= toISO(b.start) && dayIso <= toISO(b.end));
+
+    tt.innerHTML = '';
+    const closeBtn = document.createElement('button'); closeBtn.className='tip-close'; closeBtn.innerHTML='×'; closeBtn.addEventListener('click', hideTip); tt.appendChild(closeBtn);
+
+    const hdr = document.createElement('div'); hdr.className='tip-hdr'; hdr.textContent = fmt(d, {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+    const sub = document.createElement('div'); sub.className='tip-sub'; sub.textContent = h? h.name : (weekend? 'Hafta sonu' : 'Çalışma günü');
+    tt.appendChild(hdr); tt.appendChild(sub);
+
+    const tags = document.createElement('div'); tags.className='tip-tags';
+    if(h){ const t=document.createElement('span'); t.className='tag holiday'; t.textContent='Resmî tatil'; tags.appendChild(t);}
+    if(h?.halfDay){ const t=document.createElement('span'); t.className='tag holiday'; t.textContent='Arife (½ gün)'; tags.appendChild(t);}
+    if(weekend){ const t=document.createElement('span'); t.className='tag weekend'; t.textContent='Hafta sonu'; tags.appendChild(t);}
+    if(leaveDur){ const t=document.createElement('span'); t.className='tag leave'; t.textContent= (leaveDur===0.5? 'Yarım gün izin' : 'İzin'); tags.appendChild(t);}
+    tt.appendChild(tags);
+
+    if(related.length){
+      const list = document.createElement('div'); list.className='tip-list';
+      related.forEach(seg => {
+        const range = fmt(seg.start, {day:'2-digit', month:'long'}) + ' – ' + fmt(seg.end, {day:'2-digit', month:'long'});
+        const leaveInside = countLeaveInRange(seg.start, seg.end);
+        const item = document.createElement('div'); item.className='tip-item';
+        item.innerHTML = `<b>${seg.title}: ${seg.days} gün tatil</b><div style="color:#cdd0e6; font-size:12px; margin-top:4px">Aralık: <code>${range}</code>${leaveInside? ` • İzin: <b>${leaveInside}</b> gün` : ''}</div>`;
+        list.appendChild(item);
+      });
+      tt.appendChild(list);
+    }
+
+    // --- KONUM ---
+    const r = anchor.getBoundingClientRect();
+    const pad = 8;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    tt.classList.remove('hidden');
+    tt.style.maxWidth = Math.min(320, vw - 2*pad) + 'px';
+    const w = tt.offsetWidth;
+    const hgt = tt.offsetHeight;
+
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    let left, top;
+
+    if (vw <= 768) {
+      // MOBİL: anchor'ın hemen ALTINA ve EKRAN ORTASINA
+      const below = r.bottom + pad;
+      const fitsBelow = below + hgt <= vh - pad;
+      top  = fitsBelow ? below : clamp(r.top - hgt - pad, pad, vh - hgt - pad);
+      left = Math.round((vw - w)/2); // tam merkez
+      left = clamp(left, pad, vw - w - pad);
+    } else {
+      // MASAÜSTÜ: sağ -> sol -> alt-orta -> üst-orta
+      left = r.right + pad; top = r.top;
+      let ok = (left + w <= vw - pad) && (top + hgt <= vh - pad);
+      if (!ok) { left = r.left - w - pad; ok = (left >= pad) && (top + hgt <= vh - pad); }
+      if (!ok) {
+        left = clamp(r.left + (r.width/2) - (w/2), pad, vw - w - pad);
+        top  = r.bottom + pad;
+        if (top + hgt > vh - pad) top = clamp(r.top - hgt - pad, pad, vh - hgt - pad);
+      }
+    }
+
+    tt.style.left = left + 'px';
+    tt.style.top  = top  + 'px';
+    ttAnchor = anchor;
+  }
+
+  const calRootEl = document.getElementById('calendar');
+  calRootEl.addEventListener('click', (e)=>{
+    const el = e.target.closest('.day'); if(!el || el.classList.contains('empty')) return;
+    const dayIso = el.dataset.iso; if(ttAnchor === el && !tt.classList.contains('hidden')){ hideTip(); return; }
+    showTip(el, dayIso);
+  });
+  calRootEl.addEventListener('touchstart', (e)=>{
+    const el = e.target.closest('.day'); if(!el || el.classList.contains('empty')) return;
+    const dayIso = el.dataset.iso; showTip(el, dayIso);
+  }, {passive:true});
+  document.addEventListener('click', (e)=>{ if(tt.classList.contains('hidden')) return; if(e.target.closest('#tooltip') || e.target.closest('.day')) return; hideTip(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideTip(); if((e.key === 'Enter' || e.key === ' ') && document.activeElement?.classList.contains('day')){ const dayIso = document.activeElement.dataset.iso; showTip(document.activeElement, dayIso); e.preventDefault(); }});
+
+  // Öneriler
+  const sugRoot = document.getElementById('suggestions');
+  if (sugRoot && Array.isArray(longBreaks)) {
+    sugRoot.innerHTML = '';
+    longBreaks.forEach((seg) => {
+      const item = document.createElement('article');
+      item.className = 'card';
+      const rangeFmt =
+        `${fmt(seg.start, { day:'2-digit', month:'long'})} – ` +
+        `${fmt(seg.end,   { day:'2-digit', month:'long'})}`;
+      const leaveInside = countLeaveInRange(seg.start, seg.end);
+      item.innerHTML =
+        '<h3>' + seg.title + ': ' + seg.days + ' gün tatil</h3>' +
+        '<div class="meta">' +
+          '<span class="badge">İzin: <strong>' + leaveInside + '</strong> gün</span>' +
+          '<span class="badge">Tatil: <strong>' + seg.days + '</strong> gün</span>' +
+          '<span class="badge">Aralık: <strong>' + rangeFmt + '</strong></span>' +
+        '</div>';
+      sugRoot.appendChild(item);
+    });
+  }
+})();
+</script>
+</body>
+</html>
